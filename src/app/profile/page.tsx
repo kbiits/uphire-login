@@ -1,11 +1,10 @@
 "use client";
 
-import AuthWrapper from '@/components/auth_wrapper';
 import getProfile from '@/services/auth/profile';
-import { Alert, Box, CircularProgress, Container, Snackbar, Typography } from '@mui/material';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useState } from 'react';
+import { Alert, Box, CircularProgress, Snackbar, Typography } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'next/navigation';
+import { useCallback, useState } from 'react';
 
 function Profile() {
 
@@ -16,7 +15,7 @@ function Profile() {
         message: 'Login success',
     } : null);
 
-    const accessToken = sessionStorage.getItem('accessToken') || '';
+    const accessToken = typeof window !== 'undefined' ? (sessionStorage.getItem('accessToken') || '') : '';
 
     const { data: profile, status } = useQuery({
         queryKey: ['getProfile', accessToken],

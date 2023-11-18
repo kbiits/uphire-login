@@ -1,3 +1,5 @@
+"use client";
+
 import { grayTextColor } from "@/app/const";
 import postLogin from "@/services/auth/login";
 import { zodResolver } from "@hookform/resolvers/zod";

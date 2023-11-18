@@ -1,3 +1,5 @@
+"use client";
+
 import getProfile from '@/services/auth/profile';
 import postRefreshToken from '@/services/auth/refresh_token';
 import { Box, CircularProgress } from '@mui/material';
@@ -14,7 +16,7 @@ function AuthWrapper({ children, redirectRouteIfNotAuthenticated }: PropsWithChi
 
     const router = useRouter();
 
-    const [accessToken, setAccessToken] = useState(sessionStorage.getItem('accessToken'));
+    const [accessToken, setAccessToken] = useState(typeof window !== 'undefined' ? sessionStorage.getItem('accessToken') : null);
 
     const { data: profile, status, isError, error } = useQuery({
         queryKey: ['getProfile', accessToken || ''],

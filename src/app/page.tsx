@@ -110,7 +110,7 @@ export default function Login() {
                 <LoginForm />
               </Box>
               <Stack gap={1} direction={'row'} justifyContent={'center'}>
-                <Typography color={grayTextColor}>Don't have account?</Typography>
+                <Typography color={grayTextColor}>Don&apos;t have account?</Typography>
                 <Link color={'secondary'} href='/sign-up' sx={{
                   textDecoration: 'none',
                 }}>Sign up</Link>
