@@ -1,95 +1,124 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+"use client";
 
-export default function Home() {
+import LoginButton from '@/components/login_button';
+import LoginForm from '@/components/login_form';
+import { Alert, Box, Container, Divider, Grid, Link, Snackbar, Stack, Typography } from '@mui/material';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
+import { grayTextColor } from './const';
+import { TokenResponse, useGoogleLogin } from '@react-oauth/google';
+import { getGoogleUserInfo, postGoogleLogin, postSocialLogin } from '@/services/auth/login';
+import { useMutation } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
+
+export type loginResponse = {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export default function Login() {
+
+  // const { data: sessionData, status } = useSession();
+  const router = useRouter();
+
+  const [snackBar, setSnackBar] = useState<AxiosError | null>(null);
+
+  useEffect(() => {
+    return () => { }
+  }, [])
+
+  const googleLoginMutation = useMutation({
+    mutationKey: ['googleLogin'],
+    mutationFn: postGoogleLogin,
+    onSuccess: (loginResp: loginResponse) => {
+      sessionStorage.setItem('accessToken', loginResp.accessToken)
+      sessionStorage.setItem('refreshToken', loginResp.refreshToken)
+      router.push('/profile?login=success');
+    },
+  });
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: (token) => googleLoginMutation.mutate(token.access_token),
+    flow: 'implicit',
+    prompt: 'consent',
+  });
+
+  useEffect(() => {
+    if (googleLoginMutation.isError) {
+      setSnackBar(googleLoginMutation.error as AxiosError)
+    }
+
+    return () => { }
+  }, [googleLoginMutation.isError])
+
+  const closeSnackbar = useCallback(() => {
+    setSnackBar(null);
+  }, [])
+
+
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+    <section>
+      <Snackbar open={!!snackBar} autoHideDuration={6000} onClose={closeSnackbar}>
+        <Alert onClose={closeSnackbar} severity="error" sx={{ width: '100%' }}>
+          Failed login. {(snackBar?.response?.data as any)?.message || ''}
+        </Alert>
+      </Snackbar>
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+      <Box sx={{
+        py: 8,
+      }}>
+        <Container maxWidth="xl">
+          <Box width={"100%"} display={"flex"} justifyContent={"center"}>
+            <Box sx={{
+              border: '1px solid #d5d6d8',
+              borderRadius: 2,
+              maxWidth: '530px',
+              width: "100%",
+              paddingX: 6,
+              paddingTop: 4,
+              paddingBottom: 6,
+            }}>
+              <Box textAlign={'center'}>
+                <Typography variant='h4' fontSize={36} fontWeight={'bold'}>Login to Uphire</Typography>
+              </Box>
+              <Stack direction={'column'} gap={2} paddingTop={5}>
+                <LoginButton onClick={() => {
+                  googleLogin();
+                }} bgColor='#017bfe' buttonText='Continue with Google' buttonTextColor='white' imgComponent={
+                  <Image width={'14'} height={'18'} alt='Google login' src={"/google-login-icon.svg"} />
+                } />
+                <LoginButton withBorder bgColor='white' buttonText='Continue with Apple' buttonTextColor={grayTextColor} imgComponent={
+                  <Image width={'14'} height={'18'} alt='Apple login' src={'/apple-login-icon.svg'} />
+                } />
+              </Stack>
+              <Grid container py={4} direction={'row'} alignItems={'center'} columns={13}>
+                <Grid item xs={6}>
+                  <Divider />
+                </Grid>
+                <Grid item xs={1}>
+                  <Typography color={grayTextColor} textAlign={'center'}>or</Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Divider />
+                </Grid>
+              </Grid>
+              <Box sx={{
+                paddingBottom: 4,
+              }}>
+                <LoginForm />
+              </Box>
+              <Stack gap={1} direction={'row'} justifyContent={'center'}>
+                <Typography color={grayTextColor}>Don't have account?</Typography>
+                <Link color={'secondary'} href='/sign-up' sx={{
+                  textDecoration: 'none',
+                }}>Sign up</Link>
+              </Stack>
+            </Box>
+          </Box>
+        </Container>
+      </Box>
+    </section>
   )
 }

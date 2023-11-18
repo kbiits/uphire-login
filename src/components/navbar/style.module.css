@@ -1,0 +1,14 @@
+.nav_link {
+    border-bottom: 3px solid transparent;
+    text-decoration: none !important;
+    font-weight: 400;
+    font-size: 16px;
+    letter-spacing: .2px;
+    display: flex;
+    align-items: center;
+}
+
+.nav_link:hover {
+    color: #fe5507;
+    border-bottom: 3px solid #fe5507;
+}
